@@ -104,4 +104,9 @@ public class Mapper : IMapper
         }
         return default;
     }
+
+    public IMappingExpressionBuilder<TSource, TDestination> BuildAutoMap<TSource, TDestination>()
+    {
+        return new MappingExpressionBuilder<TSource, TDestination>(this);
+    }
 }
