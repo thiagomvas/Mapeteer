@@ -1,7 +1,7 @@
 ﻿using Mapeteer;
-using System.Linq.Expressions;
 
 var mapper = new Mapper();
+mapper.AddMapper<Address, string>((a) => a.ToString());
 mapper.BuildAutoMap<Source, Destination>()
     .WithTransform((src, dest) =>
     {
@@ -27,7 +27,52 @@ public record Destination
     public int Id { get; set; }
     public string Username { get; set; }
     public string FirstName { get; set; }
-    public Address Address { get; set; }
+    public string Address { get; set; }
+}
+public record Address
+{
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Zip { get; set; }
+
+    public Address()
+    {
+        Street = string.Empty;
+        City = string.Empty;
+        State = string.Empty;
+        Zip = string.Empty;
+    }
+
+    public Address(string street, string city, string state, string zip)
+    {
+        Street = street;
+        City = city;
+        State = state;
+        Zip = zip;
+    }
 }
 
-public record Address(string Street, string City, string State, string Zip);
+public record Address2
+{
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string Zip { get; set; }
+
+    public Address2()
+    {
+        Street = string.Empty;
+        City = string.Empty;
+        State = string.Empty;
+        Zip = string.Empty;
+    }
+
+    public Address2(string street, string city, string state, string zip)
+    {
+        Street = street;
+        City = city;
+        State = state;
+        Zip = zip;
+    }
+}

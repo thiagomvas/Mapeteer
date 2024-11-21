@@ -32,10 +32,23 @@ public class Mapper : IMapper
         var bindings = destProps.Select(destProp =>
         {
             var sourceProp = sourcePropDict.GetValueOrDefault(destProp.Name);
-            if (sourceProp == null || sourceProp.PropertyType != destProp.PropertyType)
+            if (sourceProp == null)
             {
                 return null;
             }
+            if(sourceProp.PropertyType != destProp.PropertyType)
+            {
+                if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var mapper))
+                {
+                    var typedMapper = mapper;
+                    var sourceValue2 = Expression.Property(sourceParam, sourceProp);
+                    var destValue2 = Expression.Invoke(Expression.Constant(typedMapper), sourceValue2);
+                    return Expression.Bind(destProp, destValue2);
+                }
+                else return null;
+
+            }
+
             var sourceValue = Expression.Property(sourceParam, sourceProp);
             var destValue = Expression.Convert(sourceValue, destProp.PropertyType);
             return Expression.Bind(destProp, destValue);
@@ -103,6 +116,12 @@ public class Mapper : IMapper
             return result;
         }
         return default;
+    }
+
+    public IMapper AddMapper<TSource, TDestination>(Func<TSource, TDestination> mapper)
+    {
+        _mappers[(typeof(TSource), typeof(TDestination))] = mapper;
+        return this;
     }
 
     public IMappingExpressionBuilder<TSource, TDestination> BuildAutoMap<TSource, TDestination>()
