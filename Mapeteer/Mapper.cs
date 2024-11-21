@@ -7,11 +7,16 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+/// <summary>
+/// Represents an object mapper.
+/// </summary>
 public class Mapper : IMapper
 {
     private readonly Dictionary<(Type, Type), Delegate> _mappers = new();
     private readonly Dictionary<(Type, Type), ICollection<Delegate>> _transformers = new();
 
+
+    /// <inheritdoc/>
     public IMapper AutoMap<TSource, TDestination>()
     {
         var srcType = typeof(TSource);
@@ -27,7 +32,7 @@ public class Mapper : IMapper
 
         var sourceParam = Expression.Parameter(srcType, "source");
         var destination = destType == typeof(string) ? Expression.New(typeof(string).GetConstructor(new[] { typeof(char[]), }),
-        Expression.Constant(Array.Empty<char>())) :  Expression.New(destType);
+        Expression.Constant(Array.Empty<char>())) : Expression.New(destType);
 
         var bindings = destProps.Select(destProp =>
         {
@@ -36,7 +41,7 @@ public class Mapper : IMapper
             {
                 return null;
             }
-            if(sourceProp.PropertyType != destProp.PropertyType)
+            if (sourceProp.PropertyType != destProp.PropertyType)
             {
                 if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var mapper))
                 {
@@ -82,22 +87,24 @@ public class Mapper : IMapper
 
         return this;
     }
+    /// <inheritdoc/>
     public IMapper TwoWayAutoMap<TSource, TDestination>()
     {
         AutoMap<TSource, TDestination>();
         AutoMap<TDestination, TSource>();
         return this;
     }
+    /// <inheritdoc/>
     public IMapper WithTransform<TSource, TDestination>(Action<TSource, TDestination> transform)
     {
-        if(!_transformers.ContainsKey((typeof(TSource), typeof(TDestination))))
+        if (!_transformers.ContainsKey((typeof(TSource), typeof(TDestination))))
         {
             _transformers[(typeof(TSource), typeof(TDestination))] = new List<Delegate>();
         }
         _transformers[(typeof(TSource), typeof(TDestination))].Add(transform);
         return this;
     }
-
+    /// <inheritdoc/>
     public TDestination Map<TSource, TDestination>(TSource source)
     {
         var result = GenerateMappedObject<TSource, TDestination>(source);
@@ -109,6 +116,7 @@ public class Mapper : IMapper
         throw new MappingNotFoundException(typeof(TSource), typeof(TDestination));
     }
 
+    /// <inheritdoc/>
     public TDestination EnsureMap<TSource, TDestination>(TSource source)
     {
         var result = GenerateMappedObject<TSource, TDestination>(source);
@@ -120,14 +128,14 @@ public class Mapper : IMapper
         return Map<TSource, TDestination>(source);
     }
 
-    private TDestination? GenerateMappedObject<TSource, TDestination>(TSource source) 
+    private TDestination? GenerateMappedObject<TSource, TDestination>(TSource source)
     {
         if (_mappers.TryGetValue((typeof(TSource), typeof(TDestination)), out var mapper))
         {
             var typedMapper = (Func<TSource, TDestination>)mapper;
 
-            var result = typedMapper(source);   
-            if(_transformers.TryGetValue((typeof(TSource), typeof(TDestination)), out var transformers))
+            var result = typedMapper(source);
+            if (_transformers.TryGetValue((typeof(TSource), typeof(TDestination)), out var transformers))
             {
                 foreach (var transformer in transformers)
                 {
@@ -139,12 +147,14 @@ public class Mapper : IMapper
         return default;
     }
 
+    /// <inheritdoc/>
     public IMapper AddMapper<TSource, TDestination>(Func<TSource, TDestination> mapper)
     {
         _mappers[(typeof(TSource), typeof(TDestination))] = mapper;
         return this;
     }
 
+    /// <inheritdoc/>
     public IMappingExpressionBuilder<TSource, TDestination> BuildAutoMap<TSource, TDestination>()
     {
         return new MappingExpressionBuilder<TSource, TDestination>(this);
