@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer.TestApp", "Mapetee
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer.Tests", "Mapeteer.Tests\Mapeteer.Tests.csproj", "{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer.Benchmarks", "Mapeteer.Benchmarks\Mapeteer.Benchmarks.csproj", "{D4160E63-35EE-44C1-86BB-DC0677069586}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4160E63-35EE-44C1-86BB-DC0677069586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4160E63-35EE-44C1-86BB-DC0677069586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4160E63-35EE-44C1-86BB-DC0677069586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4160E63-35EE-44C1-86BB-DC0677069586}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
