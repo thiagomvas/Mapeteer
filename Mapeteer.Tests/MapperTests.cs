@@ -1,6 +1,5 @@
 using Mapeteer.Exceptions;
 using Mapeteer.Tests.Models;
-using NuGet.Frameworks;
 
 namespace Mapeteer.Tests;
 
@@ -173,5 +172,28 @@ public class MapperTests
             Assert.That(source.Username, Is.EqualTo(source2.Username));
             Assert.That(source.FullName, Is.EqualTo(source2.FullName));
         });
+    }
+
+    [Test]
+    public void AutoMapAssemblies_ShouldGenerateAutoMaps()
+    {
+        var assembly = typeof(Entity).Assembly;
+        _mapper.AutoMapAssemblies(assembly, assembly);
+
+        var entity = new Entity()
+        {
+            Id = 10,
+            Data = new Source()
+            {
+                Id = 1,
+                Username = "johndoe",
+                FullName = "John Doe",
+                Address = new Address("123 Main St", "Springfield", "IL", "62701")
+            }
+        };
+
+        var dto = _mapper.Map<Entity, EntityDTO>(entity);
+
+        Assert.That(dto.Id, Is.EqualTo(entity.Id));
     }
 }
