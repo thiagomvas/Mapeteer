@@ -21,13 +21,13 @@ public class Mapper : IMapper
         {
             return this;
         }
-
         var sourcePropDict = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .ToDictionary(p => p.Name);
         var destProps = typeof(TDestination).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
         var sourceParam = Expression.Parameter(srcType, "source");
-        var destination = Expression.New(destType);
+        var destination = destType == typeof(string) ? Expression.New(typeof(string).GetConstructor(new[] { typeof(char[]), }),
+        Expression.Constant(Array.Empty<char>())) :  Expression.New(destType);
 
         var bindings = destProps.Select(destProp =>
         {
@@ -41,11 +41,32 @@ public class Mapper : IMapper
                 if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var mapper))
                 {
                     var typedMapper = mapper;
-                    var sourceValue2 = Expression.Property(sourceParam, sourceProp);
-                    var destValue2 = Expression.Invoke(Expression.Constant(typedMapper), sourceValue2);
-                    return Expression.Bind(destProp, destValue2);
+                    var innerMapExistingSourceValue = Expression.Property(sourceParam, sourceProp);
+                    var innerMapExistingDestValue = Expression.Invoke(Expression.Constant(typedMapper), innerMapExistingSourceValue);
+                    return Expression.Bind(destProp, innerMapExistingDestValue);
                 }
-                else return null;
+
+                try
+                {
+                    var autoMapMethod = GetType().GetMethod(nameof(AutoMap))?
+                        .MakeGenericMethod(sourceProp.PropertyType, destProp.PropertyType);
+                    autoMapMethod?.Invoke(this, null); // Attempt recursive mapping
+
+                    if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var autoMapper))
+                    {
+                        var sourceValue2 = Expression.Property(sourceParam, sourceProp);
+                        var mappedValue = Expression.Invoke(Expression.Constant(autoMapper), sourceValue2);
+                        return Expression.Bind(destProp, mappedValue);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log or handle exception (debugging purposes)
+                    Console.WriteLine($"Failed to auto-map {sourceProp.PropertyType} to {destProp.PropertyType}: {ex.Message}");
+                    return null; // Skip this property if mapping fails
+                }
+
+                return null;
 
             }
 
