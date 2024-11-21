@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer", "Mapeteer\Mapeteer.csproj", "{67106E7B-6A71-43EA-B49C-1190F8FBA6D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer.TestApp", "Mapeteer.TestApp\Mapeteer.TestApp.csproj", "{F182C647-A0F4-4D4A-86B6-154BB9C7B8AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mapeteer.Tests", "Mapeteer.Tests\Mapeteer.Tests.csproj", "{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{F182C647-A0F4-4D4A-86B6-154BB9C7B8AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F182C647-A0F4-4D4A-86B6-154BB9C7B8AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F182C647-A0F4-4D4A-86B6-154BB9C7B8AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C0AEC30-AEFF-47F3-A02F-0EF7A203C613}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
