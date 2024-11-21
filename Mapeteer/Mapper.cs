@@ -190,4 +190,15 @@ public class Mapper : IMapper
         return new MappingExpressionBuilder<TSource, TDestination>(this);
     }
 
+    /// <inheritdoc/>
+    public IEnumerable<TDestination> Map<TSource, TDestination>(IEnumerable<TSource> source)
+    {
+        return source.Select(Map<TSource, TDestination>);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<TDestination> EnsureMap<TSource, TDestination>(IEnumerable<TSource> source)
+    {
+        return source.Select(EnsureMap<TSource, TDestination>);
+    }
 }

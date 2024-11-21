@@ -112,4 +112,32 @@ public interface IMapper
     /// <param name="mapper">The mapping function</param>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
     IMapper AddMapper<TSource, TDestination>(Func<TSource, TDestination> mapper);
+
+    /// <summary>
+    /// Maps an <see cref="IEnumerable{T}"/> of <typeparamref name="TSource"/> to an <see cref="IEnumerable{T}"/> of <typeparamref name="TDestination"/>.
+    /// </summary>
+    /// <typeparam name="TSource">The source type.</typeparam>
+    /// <typeparam name="TDestination">The destination type.</typeparam>
+    /// <param name="source">The source collection to map.</param>
+    /// <returns>
+    /// A collection of the destination type, if a mapping exists.
+    /// </returns>
+    /// <exception cref="MappingNotFoundException">
+    /// Thrown when a mapping between the source and destination types is not found.
+    /// </exception>
+    IEnumerable<TDestination> Map<TSource, TDestination>(IEnumerable<TSource> source);
+
+    /// <summary>
+    /// Ensures that the source collection is mapped to the destination type.
+    /// </summary>
+    /// <typeparam name="TSource">The source type.</typeparam>
+    /// <typeparam name="TDestination">The destination type.</typeparam>
+    /// <param name="source">The source collection to map.</param>
+    /// <returns>
+    /// A collection of the destination type.
+    /// </returns>
+    /// <remarks>Contrary to <see cref="Map{TSource, TDestination}(IEnumerable{TSource})"/>, 
+    /// this method generates a mapping using <see cref="AutoMap{TSource, TDestination}"/> 
+    /// if it doesn't have a direct map, rather than throwing a <see cref="MappingNotFoundException"/>.</remarks>
+    IEnumerable<TDestination> EnsureMap<TSource, TDestination>(IEnumerable<TSource> source);
 }
