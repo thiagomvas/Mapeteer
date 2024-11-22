@@ -231,5 +231,34 @@ public class Mapper : IMapper
         return source.Select(EnsureMap<TSource, TDestination>);
     }
 
+    /// <inheritdoc/>
+    public void DebugTestMappings()
+    {
+        foreach (var ((sourceType, destinationType), mapper) in _mappers)
+        {
+            try
+            {
+                // Create a dummy instance of the source type.
+                var sourceInstance = Activator.CreateInstance(sourceType);
+                if (sourceInstance == null)
+                {
+                    Console.WriteLine($"Could not create an instance of type {sourceType.FullName}.");
+                    continue;
+                }
+
+                // Create a typed Func like in Map method
+                var typedMapper = mapper.GetType().GetMethod("Invoke")?.CreateDelegate(typeof(Func<,>).MakeGenericType(sourceType, destinationType), mapper);
+
+                // Invoke the mapper
+                var result = typedMapper?.DynamicInvoke(sourceInstance);
+
+                Console.WriteLine($"Mapping from {sourceType.FullName} to {destinationType.FullName} succeeded.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Mapping from {sourceType.FullName} to {destinationType.FullName} failed: {ex.Message}");
+            }
+        }
+    }
 
 }

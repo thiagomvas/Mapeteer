@@ -6,7 +6,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public Address Address { get; set; }
-        public List<Order> Orders { get; set; }
         public DateTime DateOfBirth { get; set; }
         public Status Status { get; set; }  // Enum to string mapping
         public Profile Profile { get; set; }  // Complex nested object
@@ -17,7 +16,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public Address Address { get; set; }
-        public List<OrderDTO> OrderDetails { get; set; }
         public string DateOfBirthFormatted { get; set; }  // Date transformation
         public string Status { get; set; }  // Enum to string transformation
         public ProfileDTO ProfileDetails { get; set; }  // Complex nested object mapping
@@ -74,7 +72,6 @@
     {
         public string Bio { get; set; }
         public DateTime JoinDate { get; set; }
-        public List<string> Hobbies { get; set; }
         public ContactInfo Contact { get; set; }  // Nested complex object
     }
 
@@ -83,7 +80,6 @@
     {
         public string Bio { get; set; }
         public string JoinDateFormatted { get; set; }  // Date formatting
-        public List<string> Hobbies { get; set; }
         public ContactInfoDTO ContactDetails { get; set; }  // Nested object mapping
     }
 

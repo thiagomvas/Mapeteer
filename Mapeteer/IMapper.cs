@@ -180,4 +180,15 @@ public interface IMapper
     /// It should be used in cases where the conversion from one property to another is not direct. For example converting a <see cref="DateTime"/> to a <see cref="string"/>.
     /// </remarks>
     IMapper AddTypeConverter<TSource, TDestination>(Func<TSource, TDestination> converter);
+
+    /// <summary>
+    /// Tests all registered mappings in the mapper to ensure they execute without throwing exceptions.
+    /// This method is intended for debugging purposes only and should not be used in production environments.
+    /// </summary>
+    /// <remarks>
+    /// This method attempts to map sample or default objects for all registered mappings. 
+    /// Developers can use this to identify issues in mapping configurations during development.
+    /// </remarks>
+    void DebugTestMappings();
+
 }

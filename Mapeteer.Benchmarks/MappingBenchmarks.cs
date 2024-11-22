@@ -29,25 +29,6 @@ public class MappingBenchmarks
                     State = "IL",
                     PostalCode = "62701"
                 },
-                Orders = new List<Order>
-                {
-                    new Order
-                    {
-                        OrderId = 101,
-                        Amount = 150.75m,
-                        OrderDate = new DateTime(2024, 11, 21),
-                        Status = OrderStatus.Pending,
-                        CustomerRemarks = "Urgent"
-                    },
-                    new Order
-                    {
-                        OrderId = 102,
-                        Amount = 75.50m,
-                        OrderDate = new DateTime(2024, 11, 22),
-                        Status = OrderStatus.Completed,
-                        CustomerRemarks = "Deliver ASAP"
-                    }
-                },
                 Profile = new Profile
                 {
                     Bio = "Software developer from Springfield.",
@@ -57,7 +38,6 @@ public class MappingBenchmarks
                         Email = "Foobar@gmail.com",
                         SocialMedia = "@johndoe"
                     },
-                    Hobbies = new List<string> { "https://twitter.com/johndoe", "https://github.com/johndoe" },
                     JoinDate = new DateTime(2020, 3, 10)
                 }
             });
@@ -107,7 +87,6 @@ public class MappingBenchmarks
 
             // Map Source to Target (with nested mappings)
             cfg.CreateMap<Source, Target>()
-                .ForMember(dest => dest.OrderDetails, opt => opt.MapFrom(src => src.Orders))  // Map Orders to OrderDetails
                 .ForMember(dest => dest.DateOfBirthFormatted, opt => opt.MapFrom(src => src.DateOfBirth.ToString("yyyy-MM-dd")))  // Date transformation
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))  // Enum to string mapping
                 .ForMember(dest => dest.ProfileDetails, opt => opt.MapFrom(src => src.Profile));  // Map Profile to ProfileDetails
@@ -133,21 +112,13 @@ public class MappingBenchmarks
         {
             Id = s.Id,
             Name = s.Name,
-            Address = s.Address, // Assuming Address doesn't require transformation
-            OrderDetails = s.Orders.Select(o => new OrderDTO
-            {
-                OrderId = o.OrderId,
-                Amount = o.Amount,
-                OrderDateFormatted = o.OrderDate.ToString("yyyy-MM-dd"), // Format the date
-                Status = o.Status.ToString() // Enum to string
-            }).ToList(),
+            Address = s.Address,
             DateOfBirthFormatted = s.DateOfBirth.ToString("yyyy-MM-dd"), // Format the date of birth
             Status = s.Status.ToString(), // Enum to string
             ProfileDetails = s.Profile != null ? new ProfileDTO
             {
                 Bio = s.Profile.Bio,
                 JoinDateFormatted = s.Profile.JoinDate.ToString("yyyy-MM-dd"), // Format the date
-                Hobbies = s.Profile.Hobbies, // Assuming no transformation required
                 ContactDetails = s.Profile.Contact != null ? new ContactInfoDTO
                 {
                     Email = s.Profile.Contact.Email,
