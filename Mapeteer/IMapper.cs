@@ -21,6 +21,9 @@ public interface IMapper
     /// <typeparam name="TSource">The source type.</typeparam>
     /// <typeparam name="TDestination">The destination type.</typeparam>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
+    /// <exception cref="InvalidPropertyMappingException">
+    /// Thrown when the source or destination types cannot be directly converted from one another.
+    /// </exception>
     IMapper AutoMap<TSource, TDestination>();
 
     /// <summary>
@@ -35,6 +38,9 @@ public interface IMapper
     /// For example, mapping <c>Order</c> to <c>OrderDTO</c> where 
     /// <c>Order.OrderDate</c> maps to <c>OrderDTO.OrderDateFormatted</c>.
     /// </remarks>
+    /// <exception cref="InvalidPropertyMappingException">
+    /// Thrown when the source or destination types cannot be directly converted from one another.
+    /// </exception>
     IMapper AutoMap<TSource, TDestination>(Dictionary<string, string> propertyMap);
     /// <summary>
     /// Configures automatic mapping between the source and destination types.
@@ -42,6 +48,9 @@ public interface IMapper
     /// <param name="source">The source type.</param>
     /// <param name="destination">The destination type.</param>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
+    /// <exception cref="InvalidPropertyMappingException">
+    /// Thrown when the source or destination types cannot be directly converted from one another.
+    /// </exception>
     IMapper AutoMap(Type source, Type destination);
 
     /// <summary>
@@ -56,6 +65,9 @@ public interface IMapper
     /// For example, mapping <c>Order</c> to <c>OrderDTO</c> where 
     /// <c>Order.OrderDate</c> maps to <c>OrderDTO.OrderDateFormatted</c>.
     /// </remarks>
+    /// <exception cref="InvalidPropertyMappingException">
+    /// Thrown when the source or destination types cannot be directly converted from one another.
+    /// </exception>
     IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap);
 
     /// <summary>

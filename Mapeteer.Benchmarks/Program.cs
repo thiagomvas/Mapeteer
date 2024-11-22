@@ -27,6 +27,7 @@ mapeteer.AutoMap<Source, Target>(new Dictionary<string, string>() {
 
         });
 
+mapeteer.DebugTestMappings();
 
 var source = new Source
 {

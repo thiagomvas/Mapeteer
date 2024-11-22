@@ -125,8 +125,7 @@ public class Mapper : IMapper
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Failed to auto-map {sourceProp.PropertyType} to {destProp.PropertyType}: {ex.Message}");
-                            return null;
+                            throw new InvalidPropertyMappingException(sourceProp.PropertyType, destProp.PropertyType, ex);
                         }
                     }
                     if (mapper != null)
