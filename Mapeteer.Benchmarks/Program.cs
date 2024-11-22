@@ -6,33 +6,27 @@ var summary = BenchmarkRunner.Run<MappingBenchmarks>();
 return;
 
 var mapeteer = new Mapeteer.Mapper();
-mapeteer.AutoMap<ContactInfo, ContactInfoDTO>();
-mapeteer.BuildAutoMap<Profile, ProfileDTO>()
-    .WithTransform((src, dest) =>
-    {
-        dest.JoinDateFormatted = src.JoinDate.ToString("yyyy-MM-dd");
-        dest.ContactDetails = mapeteer.Map<ContactInfo, ContactInfoDTO>(src.Contact);
-    });
+mapeteer.AutoMap<ContactInfo, ContactInfoDTO>()
+    .AutoMap<Order, OrderDTO>( new() {
+        { nameof(Order.OrderDate), nameof(OrderDTO.OrderDateFormatted) }
 
-mapeteer.BuildAutoMap<Order, OrderDTO>()
-    .WithTransform((src, dest) =>
-    {
-        dest.OrderDateFormatted = src.OrderDate.ToString("yyyy-MM-dd");
-        dest.Status = src.Status.ToString();
-    });
+})
+    .AddTypeConverter<DateTime, string>(d => d.ToString("yyyy-MM-dd"))
+    .AddTypeConverter<Status, string>(s =>  s.ToString())
+    .AddTypeConverter<OrderStatus, string>(o => o.ToString());
+mapeteer.AutoMap<Profile, ProfileDTO>(new()
+{
+    { nameof(Profile.Contact), nameof(ProfileDTO.ContactDetails) },
+    { nameof(Profile.JoinDate), nameof(ProfileDTO.JoinDateFormatted) }
+});
 
-mapeteer
-    .AutoMap<Order, OrderDTO>()
-    .BuildAutoMap<Source, Target>()
-    .WithTransform((src, dest) =>
-    {
-        dest.OrderDetails = mapeteer.Map<Order, OrderDTO>(src.Orders).ToList();
+mapeteer.BuildAutoMap<Order, OrderDTO>();
 
-        dest.DateOfBirthFormatted = src.DateOfBirth.ToString("yyyy-MM-dd");
+mapeteer.AutoMap<Source, Target>(new Dictionary<string, string>() {
+            { nameof(Source.DateOfBirth), nameof(Target.DateOfBirthFormatted) },
+            { nameof(Source.Profile), nameof(Target.ProfileDetails) }
 
-        dest.Status = src.Status.ToString();
-        dest.ProfileDetails = mapeteer.Map<Profile, ProfileDTO>(src.Profile);
-    });
+        });
 
 
 var config = new AutoMapper.MapperConfiguration(cfg =>

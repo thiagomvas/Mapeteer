@@ -69,15 +69,30 @@ public class Mapper : IMapper
 
     public IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap)
     {
+        if(source == typeof(string) && destination == typeof(string))
+        {
+            return this;
+        }
         // Reverse propertyMap key and value
         var reversedPropertyMap = propertyMap.ToDictionary(x => x.Value, x => x.Key);
         if (_mappers.ContainsKey((source, destination)))
             return this;
+
         var sourceProperties = source.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-        .ToDictionary(p => p.Name);
+            .ToDictionary(p => p.Name);
         var destinationProperties = destination.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         var sourceParam = Expression.Parameter(source, "source");
-        var destinationExpression = Expression.New(destination);
+        NewExpression? destinationExpression;
+
+        if(source == typeof(string) && destination == typeof(string))
+        {
+            destinationExpression = Expression.New(destination.GetConstructor([typeof(char[])]), Expression.Constant(Array.Empty<char>()));
+        }
+        else
+        {
+            destinationExpression = Expression.New(destination);
+        }
+
         var bindings = destinationProperties
             .Select(destProp => new { DestProp = destProp, SourceProp = sourceProperties.GetValueOrDefault(reversedPropertyMap.GetValueOrDefault(destProp.Name) ?? destProp.Name) })
             .Where(pair => pair.SourceProp != null)
@@ -85,6 +100,7 @@ public class Mapper : IMapper
             {
                 var sourceProp = pair.SourceProp!;
                 var destProp = pair.DestProp;
+
                 Expression sourceValue = Expression.Property(sourceParam, sourceProp);
 
                 if (_typeConverters.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var converter))
@@ -100,7 +116,7 @@ public class Mapper : IMapper
                     {
                         try
                         {
-                            AutoMap(sourceProp.PropertyType, destProp.PropertyType);
+                            AutoMap(sourceProp.PropertyType, destProp.PropertyType, propertyMap);
                             _mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out mapper);
                         }
                         catch (Exception ex)
@@ -117,11 +133,13 @@ public class Mapper : IMapper
                 return Expression.Bind(destProp, sourceValue);
             })
             .Where(b => b != null);
+
         var memberInit = Expression.MemberInit(destinationExpression, bindings);
         var lambda = Expression.Lambda(memberInit, sourceParam).Compile();
         _mappers[(source, destination)] = lambda;
         return this;
     }
+
 
 
     /// <inheritdoc/>
