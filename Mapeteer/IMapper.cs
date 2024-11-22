@@ -22,6 +22,19 @@ public interface IMapper
     /// <typeparam name="TDestination">The destination type.</typeparam>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
     IMapper AutoMap<TSource, TDestination>();
+
+    /// <summary>
+    /// Configures automatic mapping between the source and destination types.
+    /// </summary>
+    /// <typeparam name="TSource">The source type.</typeparam>
+    /// <typeparam name="TDestination">The destination type.</typeparam>
+    /// <param name="propertyMap">A dictionary of property mappings.</param>
+    /// <returns>An instance of <see cref="IMapper"/>.</returns>
+    /// <remarks>
+    /// Use this function to build maps where property names don't match exactly. 
+    /// For example, mapping <c>Order</c> to <c>OrderDTO</c> where 
+    /// <c>Order.OrderDate</c> maps to <c>OrderDTO.OrderDateFormatted</c>.
+    /// </remarks>
     IMapper AutoMap<TSource, TDestination>(Dictionary<string, string> propertyMap);
     /// <summary>
     /// Configures automatic mapping between the source and destination types.
@@ -30,6 +43,19 @@ public interface IMapper
     /// <param name="destination">The destination type.</param>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
     IMapper AutoMap(Type source, Type destination);
+
+    /// <summary>
+    /// Configures automatic mapping between the source and destination types.
+    /// </summary>
+    /// <param name="source">The source type.</param>
+    /// <param name="destination">The destination type.</param>
+    /// <param name="propertyMap">A dictionary of property mappings.</param>
+    /// <returns>An instance of <see cref="IMapper"/>.</returns>
+    /// <remarks>
+    /// Use this function to build maps where property names don't match exactly. 
+    /// For example, mapping <c>Order</c> to <c>OrderDTO</c> where 
+    /// <c>Order.OrderDate</c> maps to <c>OrderDTO.OrderDateFormatted</c>.
+    /// </remarks>
     IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap);
 
     /// <summary>
@@ -62,7 +88,6 @@ public interface IMapper
     /// for them, following the provided comparer.
     /// </remarks>
     IMapper AutoMapAssemblies(Assembly sourceLib, Assembly destinationLib, Func<Type, Type, bool> comparer);
-
 
     /// <summary>
     /// Ensures that the source object is mapped to the destination type.
@@ -143,5 +168,16 @@ public interface IMapper
     /// if it doesn't have a direct map, rather than throwing a <see cref="MappingNotFoundException"/>.</remarks>
     IEnumerable<TDestination> EnsureMap<TSource, TDestination>(IEnumerable<TSource> source);
 
+    /// <summary>
+    /// Adds a type converter to the mapping configuration.
+    /// </summary>
+    /// <typeparam name="TSource">The type to convert from.</typeparam>
+    /// <typeparam name="TDestination">The type to convert to.</typeparam>
+    /// <param name="converter">The conversion function.</param>
+    /// <returns>An instance of <see cref="IMapper"/>.</returns>
+    /// <remarks>
+    /// Type Converters are used in the mapping process to convert a source type to a destination type without a direct mapping.
+    /// It should be used in cases where the conversion from one property to another is not direct. For example converting a <see cref="DateTime"/> to a <see cref="string"/>.
+    /// </remarks>
     IMapper AddTypeConverter<TSource, TDestination>(Func<TSource, TDestination> converter);
 }

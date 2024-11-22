@@ -47,6 +47,7 @@ public class Mapper : IMapper
 
         return this;
     }
+    /// <inheritdoc/>
     public IMapper AddTypeConverter<TSource, TDestination>(Func<TSource, TDestination> converter)
     {
         _typeConverters[(typeof(TSource), typeof(TDestination))] = converter;
@@ -58,14 +59,17 @@ public class Mapper : IMapper
     {
         return AutoMap(typeof(TSource), typeof(TDestination));
     }
+    /// <inheritdoc/>
     public IMapper AutoMap<TSource, TDestination>(Dictionary<string, string> propertyMap)
     {
         return AutoMap(typeof(TSource), typeof(TDestination), propertyMap);
     }
+    /// <inheritdoc/>
     public IMapper AutoMap(Type source, Type destination)
     {
         return AutoMap(source, destination, new Dictionary<string, string>());
     }
+    /// <inheritdoc/>
 
     public IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap)
     {
