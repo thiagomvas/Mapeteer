@@ -22,6 +22,7 @@ public interface IMapper
     /// <typeparam name="TDestination">The destination type.</typeparam>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
     IMapper AutoMap<TSource, TDestination>();
+    IMapper AutoMap<TSource, TDestination>(Dictionary<string, string> propertyMap);
     /// <summary>
     /// Configures automatic mapping between the source and destination types.
     /// </summary>
@@ -29,6 +30,7 @@ public interface IMapper
     /// <param name="destination">The destination type.</param>
     /// <returns>An instance of <see cref="IMapper"/>.</returns>
     IMapper AutoMap(Type source, Type destination);
+    IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap);
 
     /// <summary>
     /// Configures automatic mapping between the source and destination types in the specified assemblies.
@@ -140,4 +142,6 @@ public interface IMapper
     /// this method generates a mapping using <see cref="AutoMap{TSource, TDestination}"/> 
     /// if it doesn't have a direct map, rather than throwing a <see cref="MappingNotFoundException"/>.</remarks>
     IEnumerable<TDestination> EnsureMap<TSource, TDestination>(IEnumerable<TSource> source);
+
+    IMapper AddTypeConverter<TSource, TDestination>(Func<TSource, TDestination> converter);
 }

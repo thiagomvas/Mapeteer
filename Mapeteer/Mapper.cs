@@ -14,6 +14,8 @@ public class Mapper : IMapper
 {
     private readonly Dictionary<(Type, Type), Delegate> _mappers = new();
     private readonly Dictionary<(Type, Type), ICollection<Delegate>> _transformers = new();
+    private readonly Dictionary<(Type, Type), Delegate> _typeConverters = new();
+
 
     /// <inheritdoc/>
     public IMapper AutoMapAssemblies(Assembly sourceLib, Assembly destinationLib)
@@ -23,8 +25,8 @@ public class Mapper : IMapper
             (s, d) =>
             {
                 // Compare by convention
-                return d.Name.StartsWith(s.Name) && (d.Name.EndsWith("Dto", StringComparison.InvariantCultureIgnoreCase) 
-                                                    || d.Name.EndsWith("ViewModel", StringComparison.InvariantCultureIgnoreCase) 
+                return d.Name.StartsWith(s.Name) && (d.Name.EndsWith("Dto", StringComparison.InvariantCultureIgnoreCase)
+                                                    || d.Name.EndsWith("ViewModel", StringComparison.InvariantCultureIgnoreCase)
                                                     || d.Name.EndsWith("Vm", StringComparison.InvariantCultureIgnoreCase));
             });
     }
@@ -45,77 +47,82 @@ public class Mapper : IMapper
 
         return this;
     }
+    public IMapper AddTypeConverter<TSource, TDestination>(Func<TSource, TDestination> converter)
+    {
+        _typeConverters[(typeof(TSource), typeof(TDestination))] = converter;
+        return this;
+    }
 
     /// <inheritdoc/>
     public IMapper AutoMap<TSource, TDestination>()
     {
         return AutoMap(typeof(TSource), typeof(TDestination));
     }
+    public IMapper AutoMap<TSource, TDestination>(Dictionary<string, string> propertyMap)
+    {
+        return AutoMap(typeof(TSource), typeof(TDestination), propertyMap);
+    }
     public IMapper AutoMap(Type source, Type destination)
     {
-        // Check if a mapper already exists
+        return AutoMap(source, destination, new Dictionary<string, string>());
+    }
+
+    public IMapper AutoMap(Type source, Type destination, Dictionary<string, string> propertyMap)
+    {
+        // Reverse propertyMap key and value
+        var reversedPropertyMap = propertyMap.ToDictionary(x => x.Value, x => x.Key);
         if (_mappers.ContainsKey((source, destination)))
-        {
             return this;
-        }
-
         var sourceProperties = source.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .ToDictionary(p => p.Name);
+        .ToDictionary(p => p.Name);
         var destinationProperties = destination.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
         var sourceParam = Expression.Parameter(source, "source");
         var destinationExpression = Expression.New(destination);
-
-        var bindings = destinationProperties.Select(destProp =>
-        {
-            var sourceProp = sourceProperties.GetValueOrDefault(destProp.Name);
-            if (sourceProp == null)
+        var bindings = destinationProperties
+            .Select(destProp => new { DestProp = destProp, SourceProp = sourceProperties.GetValueOrDefault(reversedPropertyMap.GetValueOrDefault(destProp.Name) ?? destProp.Name) })
+            .Where(pair => pair.SourceProp != null)
+            .Select(pair =>
             {
-                return null;
-            }
+                var sourceProp = pair.SourceProp!;
+                var destProp = pair.DestProp;
+                Expression sourceValue = Expression.Property(sourceParam, sourceProp);
 
-            if (sourceProp.PropertyType != destProp.PropertyType)
-            {
-                if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var mapper))
+                if (_typeConverters.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var converter))
                 {
-                    var sourceValue = Expression.Property(sourceParam, sourceProp);
-                    var mappedValue = Expression.Invoke(Expression.Constant(mapper), sourceValue);
-                    return Expression.Bind(destProp, mappedValue);
+                    var convertedValue = Expression.Invoke(Expression.Constant(converter), sourceValue);
+                    return Expression.Bind(destProp, convertedValue);
                 }
 
-                try
+                if (sourceProp.PropertyType != destProp.PropertyType)
                 {
-                    var autoMapMethod = GetType().GetMethod(nameof(AutoMap), new[] { typeof(Type), typeof(Type) });
-                    autoMapMethod?.Invoke(this, new object[] { sourceProp.PropertyType, destProp.PropertyType });
-
-                    if (_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out var autoMapper))
+                    Delegate? mapper = null;
+                    if (!_mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out mapper))
                     {
-                        var sourceValue = Expression.Property(sourceParam, sourceProp);
-                        var mappedValue = Expression.Invoke(Expression.Constant(autoMapper), sourceValue);
-                        return Expression.Bind(destProp, mappedValue);
+                        try
+                        {
+                            AutoMap(sourceProp.PropertyType, destProp.PropertyType);
+                            _mappers.TryGetValue((sourceProp.PropertyType, destProp.PropertyType), out mapper);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed to auto-map {sourceProp.PropertyType} to {destProp.PropertyType}: {ex.Message}");
+                            return null;
+                        }
+                    }
+                    if (mapper != null)
+                    {
+                        return Expression.Bind(destProp, Expression.Invoke(Expression.Constant(mapper), sourceValue));
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to auto-map {sourceProp.PropertyType} to {destProp.PropertyType}: {ex.Message}");
-                    return null; // Skip this property if mapping fails
-                }
-
-                return null;
-            }
-
-            var sourceValueSimple = Expression.Property(sourceParam, sourceProp);
-            var destValue = Expression.Convert(sourceValueSimple, destProp.PropertyType);
-            return Expression.Bind(destProp, destValue);
-        }).Where(b => b != null);
-
+                return Expression.Bind(destProp, sourceValue);
+            })
+            .Where(b => b != null);
         var memberInit = Expression.MemberInit(destinationExpression, bindings);
         var lambda = Expression.Lambda(memberInit, sourceParam).Compile();
-
         _mappers[(source, destination)] = lambda;
-
         return this;
     }
+
 
     /// <inheritdoc/>
     public IMapper TwoWayAutoMap<TSource, TDestination>()
@@ -169,7 +176,7 @@ public class Mapper : IMapper
             {
                 foreach (var transformer in transformers)
                 {
-                    ((Action<TSource, TDestination>)transformer)(source, result);
+                    transformer.DynamicInvoke(source, result);
                 }
             }
             return result;
@@ -201,4 +208,6 @@ public class Mapper : IMapper
     {
         return source.Select(EnsureMap<TSource, TDestination>);
     }
+
+
 }
