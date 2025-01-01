@@ -111,7 +111,7 @@ public class Mapper : IMapper
                 {
                     var convertedValue = Expression.Invoke(Expression.Constant(converter), sourceValue);
                     return Expression.Bind(destProp, convertedValue);
-                }
+                } 
 
                 if (sourceProp.PropertyType != destProp.PropertyType)
                 {

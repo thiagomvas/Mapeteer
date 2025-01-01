@@ -6,13 +6,14 @@ using Mapeteer.Benchmarks;
 //return;
 
 var mapeteer = new Mapeteer.Mapper()
-    //.AddTypeConverter<DateTime, string>(d => d.ToString("yyyy-MM-dd"))
+    .AddTypeConverter<DateTime, string>(d => d.ToString("yyyy-MM-dd"))
     .AddTypeConverter<Status, string>(s => s.ToString())
     .AddTypeConverter<OrderStatus, string>(o => o.ToString());
+
 mapeteer.AutoMap<ContactInfo, ContactInfoDTO>()
-    .AutoMap<Order, OrderDTO>(new() {
-        { nameof(Order.OrderDate), nameof(OrderDTO.OrderDateFormatted) }
-    });
+        .AutoMap<Order, OrderDTO>(new() {
+            { nameof(Order.OrderDate), nameof(OrderDTO.OrderDateFormatted) }
+        });
 mapeteer.AutoMap<Profile, ProfileDTO>(new()
 {
     { nameof(Profile.Contact), nameof(ProfileDTO.ContactDetails) },
@@ -26,9 +27,6 @@ mapeteer.AutoMap<Source, Target>(new Dictionary<string, string>() {
             { nameof(Source.Profile), nameof(Target.ProfileDetails) }
 
         });
-
-mapeteer.DebugTestMappings();
-
 var source = new Source
 {
     Id = 1,
@@ -58,4 +56,5 @@ var source = new Source
 // Map Source to Target using Mapeteer
 var target = mapeteer.Map<Source, Target>(source);
 
-Console.WriteLine();
+Console.WriteLine(target);
+Console.WriteLine(target);

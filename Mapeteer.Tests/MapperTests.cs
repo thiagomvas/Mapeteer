@@ -74,12 +74,10 @@ public class MapperTests
     }
 
     [Test]
-    public void Map_WithInvalidSourceAndDestination_ShouldNotMap()
+    public void Map_WithInvalidSourceAndDestination_ShouldThrow()
     {
         var invalidSrc = new IncompatibleSource();
-        _mapper.AutoMap<IncompatibleSource, IncompatibleDestination>();
-
-        Assert.That(invalidSrc.Foo.ToString(), Is.Not.EqualTo(_mapper.Map<IncompatibleSource, IncompatibleDestination>(invalidSrc).Foo));
+        Assert.Throws<InvalidPropertyMappingException>(() => _mapper.AutoMap<IncompatibleSource, IncompatibleDestination>());
     }
 
     [Test]
@@ -195,5 +193,26 @@ public class MapperTests
         var dto = _mapper.Map<Entity, EntityDTO>(entity);
 
         Assert.That(dto.Id, Is.EqualTo(entity.Id));
+    }
+
+    [Test]
+    public void TypeConverters_WhenNeededAndExists_ShouldConvert()
+    {
+        var date = new DateTime(2000, 1, 1);
+        var formatted = date.ToString("yyyy-MM-dd");
+        _mapper.AddTypeConverter<DateTime, string>(d => d.ToString("yyyy-MM-dd"));
+        _mapper.AutoMap<TypeConverterTestSource, TypeConverterTestDestination>(new()
+        {
+            {"Date", "FormattedDate" }
+        });
+
+        var source = new TypeConverterTestSource()
+        {
+            Date = date
+        };
+
+        var result = _mapper.Map<TypeConverterTestSource, TypeConverterTestDestination>(source);
+
+        Assert.That(result.FormattedDate, Is.EqualTo(formatted));
     }
 }
